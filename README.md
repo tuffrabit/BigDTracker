@@ -1,5 +1,5 @@
 # BigDTracker
-CLI tool to keep track of your Devil's Ruin kills via the Bungie API
+CLI tool to keep track of your Devil's Ruin PvP kills via the Bungie API
 
 ## Build
 ### Intro
