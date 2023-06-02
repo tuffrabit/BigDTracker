@@ -18,7 +18,9 @@ If everything went well you should have an executable with your private Bungie A
 When running the application, you at least need to provide a Bungie name (username#5555). You may also provide an output location flag for debugging purposes.
 ### Windows (PowerShell)
 No debug output `./BigDTracker username#5555`
+
 With debug output `./BigDTracker username#5555 1`
+
 Pipe debug output to file `./BigDTracker username#5555 1 | Out-File -FilePath .\out.txt`
 
 ## Notes
