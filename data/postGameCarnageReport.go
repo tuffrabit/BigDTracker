@@ -50,7 +50,6 @@ func GetPostGameCarnageReportsByInstanceId(db *sql.DB, apiKey string, instanceId
 	}
 
 	if len(dbPostGameCarnageReports) == 0 {
-		fmt.Printf("PostGameCarnageReport data needs to be inserted into DB for: %v\n", instanceId)
 		postGameCarnageReportResponse, err := d2api.GetPostGameCarnageReport(apiKey, instanceId)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report data from api: %w", err)

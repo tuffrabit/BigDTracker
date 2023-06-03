@@ -38,7 +38,7 @@ func GetPostGameCarnageReportsByInstanceId(db *sql.DB, instanceId string) ([]*Db
 }
 
 func CreatePostGameCarnageReport(db *sql.DB, instanceId string, json string) error {
-	fmt.Printf("Inserting PostGameCarnageReport data into DB for: %v\n", instanceId)
+	log.Printf("Inserting PostGameCarnageReport data into DB for: %v\n", instanceId)
 
 	statement, err := db.Prepare("INSERT INTO post_game_carnage_report(instance_id, json) values(?,?)")
 	if err != nil {
