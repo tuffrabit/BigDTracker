@@ -14,10 +14,13 @@ import (
 	"github.com/tuffrabit/BigDTracker/database"
 )
 
-var apiKey = ""
-
 func main() {
 	mainArgs, err := validateStartup()
+	if err != nil {
+		panic(err)
+	}
+
+	apiKey, err := getApiKey()
 	if err != nil {
 		panic(err)
 	}
@@ -42,43 +45,38 @@ func main() {
 
 	for _, profile := range profiles {
 		for _, characterId := range profile.Profile.Data.CharacterIds {
-			activityPage := 0
+			activities, err := data.GetActivities(
+				db,
+				apiKey,
+				profile.DBProfile.MembershipId,
+				profile.DBProfile.MembershipType,
+				characterId,
+			)
+			if err != nil {
+				panic(err)
+			}
 
-			for {
-				activityResponse, err := d2api.GetActivities(apiKey, activityPage, profile.DBProfile.MembershipId, profile.DBProfile.MembershipType, characterId)
+			for _, activity := range activities {
+				log.Printf("Processing Activity #: %v\n", activity.InstanceId)
+
+				postGameCarnageReports, err := data.GetPostGameCarnageReportsByInstanceId(db, apiKey, activity.InstanceId)
 				if err != nil {
-					log.Println(fmt.Errorf("main: could not get activites from bungie api: %w", err))
+					log.Println(fmt.Errorf("main: could not get post game carnage report for %v: %w", activity.InstanceId, err))
 					break
 				}
 
-				log.Printf("Bungie Activities response: %v\n", activityResponse.Response)
-
-				if len(activityResponse.Response.Activities) < 1 {
-					break
-				}
-
-				for _, activity := range activityResponse.Response.Activities {
-					postGameCarnageReports, err := data.GetPostGameCarnageReportsByInstanceId(db, apiKey, activity.ActivityDetails.InstanceId)
-					if err != nil {
-						log.Println(fmt.Errorf("main: could not get post game carnage report for %v: %w", activity.ActivityDetails.InstanceId, err))
-						break
-					}
-
-					for _, postGameCarnageReport := range postGameCarnageReports {
-						for _, entry := range postGameCarnageReport.Entries {
-							if entry.CharacterId == characterId {
-								for _, weapon := range entry.Extended.Weapons {
-									if weapon.ReferenceId == d2api.BigDApiHash {
-										count := weapon.Values.UniqueWeaponKills.Basic.Value + weapon.Values.UniqueWeaponPrecisionKills.Basic.Value
-										bigDKillCount = bigDKillCount + count
-									}
+				for _, postGameCarnageReport := range postGameCarnageReports {
+					for _, entry := range postGameCarnageReport.Entries {
+						if entry.CharacterId == characterId {
+							for _, weapon := range entry.Extended.Weapons {
+								if weapon.ReferenceId == d2api.BigDApiHash {
+									count := weapon.Values.UniqueWeaponKills.Basic.Value + weapon.Values.UniqueWeaponPrecisionKills.Basic.Value
+									bigDKillCount = bigDKillCount + count
 								}
 							}
 						}
 					}
 				}
-
-				activityPage = activityPage + 1
 			}
 		}
 	}
@@ -104,10 +102,6 @@ func validateStartup() (*MainArgs, error) {
 		if !strings.Contains(user, "#") {
 			return nil, errors.New("validateStartup: the supplied bungie username is an unvalid format")
 		}
-
-		if apiKey == "" {
-			return nil, errors.New("validateStartup: bungie api key is missing")
-		}
 	} else {
 		return nil, errors.New("validateStartup: you must supply a bungie username")
 	}
@@ -127,4 +121,17 @@ func validateStartup() (*MainArgs, error) {
 	mainArgs.LogLocation = logLocation
 
 	return mainArgs, nil
+}
+
+func getApiKey() (string, error) {
+	apiKey, exists := os.LookupEnv("BUNGIE_API_KEY")
+	if !exists {
+		return "", errors.New("getApiKey: bungie api key env variable is not set")
+	}
+
+	if apiKey == "" {
+		return "", errors.New("getApiKey: bungie api key cannot be blank")
+	}
+
+	return apiKey, nil
 }

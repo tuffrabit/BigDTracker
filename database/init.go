@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/glebarez/go-sqlite"
+	//_ "github.com/glebarez/go-sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func GetDb() (*sql.DB, error) {
@@ -15,7 +16,9 @@ func GetDb() (*sql.DB, error) {
 		initDb = true
 	}
 
-	db, err := sql.Open("sqlite", "./data.db")
+	dsn := "./data.db"
+	//db, err := sql.Open("sqlite", dsn)
+	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("GetDb: could not open data.db: %w", err)
 	}
@@ -59,6 +62,47 @@ func getInitializeDbTableCreateStatements(db *sql.DB) ([]*sql.Stmt, error) {
 	)
 	if err != nil {
 		return nil, fmt.Errorf("getInitializeDbTableCreationStatements: could not create profile table query: %w", err)
+	}
+
+	statements = append(statements, statement)
+
+	statement, err = db.Prepare(`
+		CREATE TABLE activity (
+			id INTEGER PRIMARY KEY,
+			instance_id TEXT NOT NULL,
+			membership_ids TEXT NOT NULL,
+			membership_type INTEGER NOT NULL,
+			character_ids TEXT NOT NULL
+		);`,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("getInitializeDbTableCreationStatements: could not create activity table: %w", err)
+	}
+
+	statements = append(statements, statement)
+
+	statement, err = db.Prepare(`
+		CREATE TABLE activity_history (
+			id INTEGER PRIMARY KEY,
+			membership_id TEXT NOT NULL,
+			membership_type INTEGER NOT NULL,
+			character_id TEXT NOT NULL,
+			activity_count INTEGER NOT NULL
+		);`,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("getInitializeDbTableCreationStatements: could not create activity_history table: %w", err)
+	}
+
+	statements = append(statements, statement)
+
+	statement, err = db.Prepare(`
+			CREATE UNIQUE INDEX activity_history_unique_index
+			ON activity_history (membership_id, membership_type, character_id
+		);`,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("getInitializeDbTableCreationStatements: could not create activity_history_unique_index index: %w", err)
 	}
 
 	statements = append(statements, statement)

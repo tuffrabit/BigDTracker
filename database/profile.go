@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/glebarez/go-sqlite"
+	//_ "github.com/glebarez/go-sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type DbProfile struct {
@@ -26,7 +27,7 @@ func GetProfilesByUsername(db *sql.DB, username string) ([]*DbProfile, error) {
 
 	rows, err := statement.Query(username)
 	if err != nil {
-		return nil, fmt.Errorf("GetProfilesByUsername: could not create profile query: %w", err)
+		return nil, fmt.Errorf("GetProfilesByUsername: could not execute query: %w", err)
 	}
 
 	defer rows.Close()
