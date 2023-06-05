@@ -1,21 +1,15 @@
 # BigDTracker
 CLI tool to keep track of your Devil's Ruin PvP kills via the Bungie API
 
-## Build
-### Intro
-Before you can use this, you must build it for yourself. This application makes use of the Bungie API which requires the use of a Bungie API key which is a private value. Once compiled, this application will contain a private Bungie API key embedded in the executable binary. You should not distribute an executable compiled with your private Bungie API key. Each person wanting to use this should register a new Bungie API app with Bungie to get their own private API key. Follow this guide to obtain your own private Bungie API key: https://github.com/vpzed/Destiny2-API-Info-wiki/blob/master/API-Introduction-Part-1-Setup.md#bungienet-api-key.
+## Bungie API Key
+Before you can use this, you must aquire a Bungie API key for yourself and set it as an environment variable. Follow this guide to obtain your own private Bungie API key: https://github.com/vpzed/Destiny2-API-Info-wiki/blob/master/API-Introduction-Part-1-Setup.md#bungienet-api-key. Once you have a Bungie API key you must set a BUNGIE_API_KEY env variable:
 
-### Go
-This application is written in Go. Building Go applications is easy:
-1. Download and install Go for your OS: https://go.dev/dl/
-2. Clone or download this repo (you might need to fork it for the Bungie API registration process)
-3. Open a terminal and navigate to where you placed this repo
-4. Run `go build -ldflags "-X main.apiKey=YOUR_BUNGIE_API_KEY_GOES_HERE"`
-
-If everything went well you should have an executable with your private Bungie API embedded within.
+### Windows (PowerShell)
+`$env:BUNGIE_API_KEY="YOUR_BUNGIE_API_KEY_GOES_HERE"`
 
 ## Usage
 When running the application, you at least need to provide a Bungie name (username#5555). You may also provide an output location flag for debugging purposes.
+
 ### Windows (PowerShell)
 No debug output `./BigDTracker username#5555`
 
