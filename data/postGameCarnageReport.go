@@ -1,7 +1,6 @@
 package data
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
@@ -12,7 +11,7 @@ import (
 type PostGameCarnageReport struct {
 	Period                  string                       `json:"period"`
 	Entries                 []PostGameCarnageReportEntry `json:"entries"`
-	DbPostGameCarnageReport *database.DbPostGameCarnageReport
+	DbPostGameCarnageReport *database.DbPostGameCarnageReportData
 }
 
 type PostGameCarnageReportEntry struct {
@@ -43,8 +42,8 @@ type PostGameCarnageReportBasicValue struct {
 	Value        float64 `json:"value"`
 }
 
-func GetPostGameCarnageReportsByInstanceId(db *sql.DB, apiKey string, instanceId string) ([]*PostGameCarnageReport, error) {
-	dbPostGameCarnageReports, err := database.GetPostGameCarnageReportsByInstanceId(db, instanceId)
+func GetPostGameCarnageReportsByInstanceId(db *database.DbPostGameCarnageReport, apiKey string, instanceId string) ([]*PostGameCarnageReport, error) {
+	dbPostGameCarnageReports, err := db.GetPostGameCarnageReportsByInstanceId(instanceId)
 	if err != nil {
 		return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report from db: %w", err)
 	}
@@ -60,12 +59,12 @@ func GetPostGameCarnageReportsByInstanceId(db *sql.DB, apiKey string, instanceId
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not strip response json: %w", err)
 		}
 
-		err = database.CreatePostGameCarnageReport(db, instanceId, postGameCarnageReportJson)
+		err = db.CreatePostGameCarnageReport(instanceId, postGameCarnageReportJson)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not insert post game carnage report data into db: %w", err)
 		}
 
-		dbPostGameCarnageReports, err = database.GetPostGameCarnageReportsByInstanceId(db, instanceId)
+		dbPostGameCarnageReports, err = db.GetPostGameCarnageReportsByInstanceId(instanceId)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report from db: %w", err)
 		}
