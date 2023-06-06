@@ -1,7 +1,6 @@
 package data
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"strings"
@@ -12,17 +11,16 @@ import (
 
 type Activity struct {
 	InstanceId string
-	DbActivity *database.DbActivity
+	DbActivity *database.DbActivityData
 }
 
-func GetActivities(db *sql.DB, apiKey string, membershipId string, membershipType int, characterId string) ([]*Activity, error) {
-	err := populateActivities(db, apiKey, membershipId, membershipType, characterId)
+func GetActivities(dbHandlers *database.DbHandlers, apiKey string, membershipId string, membershipType int, characterId string) ([]*Activity, error) {
+	err := populateActivities(dbHandlers, apiKey, membershipId, membershipType, characterId)
 	if err != nil {
 		return nil, fmt.Errorf("GetActivities: could not populate activities: %w", err)
 	}
 
-	dbActivities, err := database.GetActivitiesByMembershipIdMembershipTypeCharacterId(
-		db,
+	dbActivities, err := dbHandlers.Activity.GetActivitiesByMembershipIdMembershipTypeCharacterId(
 		membershipId,
 		membershipType,
 		characterId,
@@ -47,13 +45,13 @@ func GetActivities(db *sql.DB, apiKey string, membershipId string, membershipTyp
 	return activities, nil
 }
 
-func populateActivities(db *sql.DB, apiKey string, membershipId string, membershipType int, characterId string) error {
-	activityHistory, err := database.GetActivityHistoryByMembershipIdMembershipTypeCharacterId(db, membershipId, membershipType, characterId)
+func populateActivities(dbHandlers *database.DbHandlers, apiKey string, membershipId string, membershipType int, characterId string) error {
+	activityHistory, err := dbHandlers.ActivityHistory.GetActivityHistoryByMembershipIdMembershipTypeCharacterId(membershipId, membershipType, characterId)
 	if err != nil {
 		return fmt.Errorf("populateActivities: could not get activity history from db: %w", err)
 	}
 
-	log.Printf("ActivityHistory: %v for membership_id: %v, membership_type: %v, character_id: %v\n", *activityHistory, membershipId, membershipType, characterId)
+	log.Printf("ActivityHistory Count: %v for membership_id: %v, membership_type: %v, character_id: %v\n", activityHistory.ActivityCount, membershipId, membershipType, characterId)
 
 	startPage := 0
 	activitiesCount := 0
@@ -78,7 +76,7 @@ func populateActivities(db *sql.DB, apiKey string, membershipId string, membersh
 
 		activitiesCount = activitiesCount + activityResponseCount
 
-		err = updateDbActivities(db, activityResponse.Response.Activities, membershipId, membershipType, characterId)
+		err = updateDbActivities(dbHandlers.Activity, activityResponse.Response.Activities, membershipId, membershipType, characterId)
 		if err != nil {
 			return fmt.Errorf("populateActivities: could not get activity history from db: %w", err)
 		}
@@ -91,12 +89,12 @@ func populateActivities(db *sql.DB, apiKey string, membershipId string, membersh
 	}
 
 	if activityHistory.Id == 0 {
-		err := database.CreateActivityHistory(db, membershipId, membershipType, characterId, activitiesCount)
+		err := dbHandlers.ActivityHistory.CreateActivityHistory(membershipId, membershipType, characterId, activitiesCount)
 		if err != nil {
 			return fmt.Errorf("populateActivities: could not create activity history in db: %w", err)
 		}
 	} else {
-		err := database.UpdateActivityHistoryById(db, activityHistory.Id, membershipId, membershipType, characterId, activitiesCount)
+		err := dbHandlers.ActivityHistory.UpdateActivityHistoryById(activityHistory.Id, membershipId, membershipType, characterId, activitiesCount)
 		if err != nil {
 			return fmt.Errorf("populateActivities: could not update activity history in db: %w", err)
 		}
@@ -105,9 +103,9 @@ func populateActivities(db *sql.DB, apiKey string, membershipId string, membersh
 	return nil
 }
 
-func updateDbActivities(db *sql.DB, apiActivities []d2api.GetActivitiesRepsonseActivity, membershipId string, membershipType int, characterId string) error {
+func updateDbActivities(db *database.DbActivity, apiActivities []d2api.GetActivitiesRepsonseActivity, membershipId string, membershipType int, characterId string) error {
 	for _, activity := range apiActivities {
-		dbActivities, err := database.GetActivitiesByInstanceId(db, activity.ActivityDetails.InstanceId)
+		dbActivities, err := db.GetActivitiesByInstanceId(activity.ActivityDetails.InstanceId)
 		if err != nil {
 			return fmt.Errorf("updateDbActivities: could not get activities from db: %w", err)
 		}
@@ -131,8 +129,7 @@ func updateDbActivities(db *sql.DB, apiActivities []d2api.GetActivitiesRepsonseA
 				}
 
 				if doUpdate {
-					err = database.UpdateActivityById(
-						db,
+					err = db.UpdateActivityById(
 						dbActivity.Id,
 						dbActivity.InstanceId,
 						strings.Join(membershipIds, ","),
@@ -149,7 +146,7 @@ func updateDbActivities(db *sql.DB, apiActivities []d2api.GetActivitiesRepsonseA
 		}
 
 		if !dbActivityUpdated {
-			database.CreateActivity(db, activity.ActivityDetails.InstanceId, membershipId, membershipType, characterId)
+			db.CreateActivity(activity.ActivityDetails.InstanceId, membershipId, membershipType, characterId)
 			if err != nil {
 				return fmt.Errorf("updateDbActivities: could not create activity in db: %w", err)
 			}

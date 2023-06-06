@@ -1,7 +1,6 @@
 package data
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
@@ -13,7 +12,7 @@ type ProfileContainer struct {
 	Profile                            Profile `json:"profile"`
 	ResponseMintedTimestamp            string  `json:"responseMintedTimestamp"`
 	SecondaryComponentsMintedTimestamp string  `json:"secondaryComponentsMintedTimestamp"`
-	DBProfile                          *database.DbProfile
+	DBProfile                          *database.DbProfileData
 }
 
 type Profile struct {
@@ -26,8 +25,9 @@ type ProfileData struct {
 	CurrentGuardianRank int      `json:"currentGuardianRank"`
 }
 
-func GetProfilesByUsername(db *sql.DB, apiKey string, username string) ([]*ProfileContainer, error) {
-	dbProfiles, err := database.GetProfilesByUsername(db, username)
+func GetProfilesByUsername(db *database.DbProfile, apiKey string, username string) ([]*ProfileContainer, error) {
+	//dbProfiles, err := database.GetProfilesByUsername(db, username)
+	dbProfiles, err := db.GetProfilesByUsername(username)
 	if err != nil {
 		return nil, fmt.Errorf("GetProfilesByUsername: could not get profiles from db: %w", err)
 	}
@@ -46,12 +46,14 @@ func GetProfilesByUsername(db *sql.DB, apiKey string, username string) ([]*Profi
 					return nil, fmt.Errorf("GetProfilesByUsername: could not strip response json: %w", err)
 				}
 
-				err = database.CreateProfile(db, username, player.MembershipType, player.MembershipId, profileJson)
+				err = db.CreateProfile(username, player.MembershipType, player.MembershipId, profileJson)
+				//err = database.CreateProfile(db, username, player.MembershipType, player.MembershipId, profileJson)
 				if err != nil {
 					return nil, fmt.Errorf("GetProfilesByUsername: could not insert profile data into db: %w", err)
 				}
 
-				dbProfiles, err = database.GetProfilesByUsername(db, username)
+				//dbProfiles, err = database.GetProfilesByUsername(db, username)
+				dbProfiles, err = db.GetProfilesByUsername(username)
 				if err != nil {
 					return nil, fmt.Errorf("GetProfilesByUsername: could not get profiles from db: %w", err)
 				}
