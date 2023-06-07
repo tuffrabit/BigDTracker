@@ -14,8 +14,8 @@ type Activity struct {
 	DbActivity *database.DbActivityData
 }
 
-func GetActivities(dbHandlers *database.DbHandlers, apiKey string, membershipId string, membershipType int, characterId string) ([]*Activity, error) {
-	err := populateActivities(dbHandlers, apiKey, membershipId, membershipType, characterId)
+func GetActivities(dbHandlers *database.DbHandlers, api *d2api.Api, membershipId string, membershipType int, characterId string) ([]*Activity, error) {
+	err := populateActivities(dbHandlers, api, membershipId, membershipType, characterId)
 	if err != nil {
 		return nil, fmt.Errorf("GetActivities: could not populate activities: %w", err)
 	}
@@ -45,7 +45,7 @@ func GetActivities(dbHandlers *database.DbHandlers, apiKey string, membershipId 
 	return activities, nil
 }
 
-func populateActivities(dbHandlers *database.DbHandlers, apiKey string, membershipId string, membershipType int, characterId string) error {
+func populateActivities(dbHandlers *database.DbHandlers, api *d2api.Api, membershipId string, membershipType int, characterId string) error {
 	activityHistory, err := dbHandlers.ActivityHistory.GetActivityHistoryByMembershipIdMembershipTypeCharacterId(membershipId, membershipType, characterId)
 	if err != nil {
 		return fmt.Errorf("populateActivities: could not get activity history from db: %w", err)
@@ -63,7 +63,7 @@ func populateActivities(dbHandlers *database.DbHandlers, apiKey string, membersh
 	log.Printf("Activity start page #: %v for membership_id: %v, membership_type: %v, character_id: %v\n", startPage, membershipId, membershipType, characterId)
 
 	for {
-		activityResponse, err := d2api.GetActivities(apiKey, startPage, membershipId, membershipType, characterId)
+		activityResponse, err := api.GetActivities(startPage, membershipId, membershipType, characterId)
 		if err != nil {
 			return fmt.Errorf("populateActivities: could not get activity history from db: %w", err)
 		}

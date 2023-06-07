@@ -86,6 +86,18 @@ func (db *Db) initializeDb() error {
 		}
 	}
 
+	createStatements, err = db.getInitializeDbIndexCreateStatements()
+	if err != nil {
+		return fmt.Errorf("Db.InitializeDb: could not get index create statements: %w", err)
+	}
+
+	for _, statement := range createStatements {
+		_, err := statement.Exec()
+		if err != nil {
+			return fmt.Errorf("Db.InitializeDb: could not execute index create statement: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -138,17 +150,6 @@ func (db *Db) getInitializeDbTableCreateStatements() ([]*sql.Stmt, error) {
 	statements = append(statements, statement)
 
 	statement, err = db.Db.Prepare(`
-			CREATE UNIQUE INDEX activity_history_unique_index
-			ON activity_history (membership_id, membership_type, character_id
-		);`,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("Db.getInitializeDbTableCreationStatements: could not create activity_history_unique_index index: %w", err)
-	}
-
-	statements = append(statements, statement)
-
-	statement, err = db.Db.Prepare(`
 		CREATE TABLE post_game_carnage_report (
 			id INTEGER PRIMARY KEY,
 			instance_id TEXT NOT NULL UNIQUE,
@@ -157,6 +158,23 @@ func (db *Db) getInitializeDbTableCreateStatements() ([]*sql.Stmt, error) {
 	)
 	if err != nil {
 		return nil, fmt.Errorf("Db.getInitializeDbTableCreationStatements: could not create post_game_carnage_report table: %w", err)
+	}
+
+	statements = append(statements, statement)
+
+	return statements, nil
+}
+
+func (db *Db) getInitializeDbIndexCreateStatements() ([]*sql.Stmt, error) {
+	var statements []*sql.Stmt
+
+	statement, err := db.Db.Prepare(`
+			CREATE UNIQUE INDEX activity_history_unique_index
+			ON activity_history (membership_id, membership_type, character_id
+		);`,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("Db.getInitializeDbIndexCreateStatements: could not create activity_history_unique_index index: %w", err)
 	}
 
 	statements = append(statements, statement)

@@ -3,9 +3,7 @@ package d2api
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 )
 
 type PostGameCarnageReportRepsonse struct {
@@ -44,44 +42,21 @@ type PostGameCarnageReportRepsonseBasicValue struct {
 	Value float64 `json:"value"`
 }
 
-func GetPostGameCarnageReport(apiKey string, instanceId string) (*PostGameCarnageReportRepsonse, error) {
+func (api *Api) GetPostGameCarnageReport(instanceId string) (*PostGameCarnageReportRepsonse, error) {
 	log.Printf("Getting PostGameCarnageReport data from Bungie for: %v\n", instanceId)
 
-	request, err := http.NewRequest(
-		"GET",
-		baseUrl+"Stats/PostGameCarnageReport/"+instanceId+"/",
-		nil,
-	)
+	responseBody, err := api.DoGetRequest(fmt.Sprintf("Stats/PostGameCarnageReport/%v/", instanceId))
 	if err != nil {
-		return nil, fmt.Errorf("GetPostGameCarnageReport: could not create bungie api request: %w", err)
-	}
-
-	request.Header.Add("X-API-KEY", apiKey)
-
-	client := &http.Client{}
-	httpResponse, err := client.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("GetPostGameCarnageReport: request to bungie api failed: %w", err)
-	}
-
-	defer httpResponse.Body.Close()
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GetPostGameCarnageReport: response from bungie api returned http %v", httpResponse.StatusCode)
-	}
-
-	body, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return nil, fmt.Errorf("GetPostGameCarnageReport: could not read response body: %w", err)
+		return nil, fmt.Errorf("Api.GetPostGameCarnageReport: could not create bungie api request: %w", err)
 	}
 
 	jsonResponse := &PostGameCarnageReportRepsonse{}
-	err = json.Unmarshal(body, jsonResponse)
+	err = json.Unmarshal(*responseBody, jsonResponse)
 	if err != nil {
-		return nil, fmt.Errorf("GetPostGameCarnageReport: could not json decode response: %w", err)
+		return nil, fmt.Errorf("Api.GetPostGameCarnageReport: could not json decode response: %w", err)
 	}
 
-	jsonResponse.Json = string(body)
+	jsonResponse.Json = string(*responseBody)
 
 	return jsonResponse, nil
 }
