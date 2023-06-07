@@ -82,7 +82,7 @@ func (dbActivity *DbActivity) GetActivitiesByInstanceId(instanceId string) ([]*D
 }
 
 func (dbActivity *DbActivity) GetActivitiesByMembershipIdMembershipTypeCharacterId(membershipId string, membershipType int, characterId string) ([]*DbActivityData, error) {
-	log.Printf("Getting Activity data from DB for membership_id: %v and membership_type: %v and character_id: %v\n", membershipId, membershipType, characterId)
+	log.Printf("Getting Activity data from DB for membership_id: %v & membership_type: %v & character_id: %v\n", membershipId, membershipType, characterId)
 
 	rows, err := dbActivity.PreparedStatements.GetByMembershipIdMembershipTypeCharacterId.Query(membershipId, membershipType, characterId)
 	if err != nil {

@@ -101,6 +101,8 @@ func (dbProfile *DbProfile) GetProfileByMembershipId(membershipId string) ([]*Db
 }
 
 func (dbProfile *DbProfile) CreateProfile(username string, membershipType int, membershipId string, json string) error {
+	log.Printf("Inserting Profiile data into DB for username: %v & membership_type: %v & membership_id: %v\n", username, membershipType, membershipId)
+
 	_, err := dbProfile.PreparedStatements.Create.Exec(username, membershipType, membershipId, json)
 	if err != nil {
 		return fmt.Errorf("DbProfile.CreateProfile: could not execute insert: %w", err)
@@ -110,6 +112,8 @@ func (dbProfile *DbProfile) CreateProfile(username string, membershipType int, m
 }
 
 func (dbProfile *DbProfile) UpdateProfileById(id int, username string, membershipType int, membershipId string, json string) error {
+	log.Printf("Updating Profiile data in DB for username: %v & membership_type: %v & membership_id: %v\n", username, membershipType, membershipId)
+
 	_, err := dbProfile.PreparedStatements.UpdateById.Exec(username, membershipType, membershipId, json, id)
 	if err != nil {
 		return fmt.Errorf("DbProfile.UpdateProfileById: could not execute update: %w", err)

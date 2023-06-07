@@ -25,21 +25,20 @@ type ProfileData struct {
 	CurrentGuardianRank int      `json:"currentGuardianRank"`
 }
 
-func GetProfilesByUsername(db *database.DbProfile, apiKey string, username string) ([]*ProfileContainer, error) {
-	//dbProfiles, err := database.GetProfilesByUsername(db, username)
+func GetProfilesByUsername(db *database.DbProfile, api *d2api.Api, username string) ([]*ProfileContainer, error) {
 	dbProfiles, err := db.GetProfilesByUsername(username)
 	if err != nil {
 		return nil, fmt.Errorf("GetProfilesByUsername: could not get profiles from db: %w", err)
 	}
 
 	if len(dbProfiles) == 0 {
-		playerResponse, err := d2api.GetPlayer(apiKey, username)
+		playerResponse, err := api.GetPlayer(username)
 		if err != nil {
 			return nil, fmt.Errorf("GetProfilesByUsername: could not get player data from api: %w", err)
 		}
 
 		for _, player := range playerResponse.Response {
-			profileResponse, err := d2api.GetProfile(apiKey, player.MembershipId, player.MembershipType)
+			profileResponse, err := api.GetProfile(player.MembershipId, player.MembershipType)
 			if err == nil {
 				profileJson, err := stripApiRepsonseJson(profileResponse.Json)
 				if err != nil {
@@ -47,12 +46,10 @@ func GetProfilesByUsername(db *database.DbProfile, apiKey string, username strin
 				}
 
 				err = db.CreateProfile(username, player.MembershipType, player.MembershipId, profileJson)
-				//err = database.CreateProfile(db, username, player.MembershipType, player.MembershipId, profileJson)
 				if err != nil {
 					return nil, fmt.Errorf("GetProfilesByUsername: could not insert profile data into db: %w", err)
 				}
 
-				//dbProfiles, err = database.GetProfilesByUsername(db, username)
 				dbProfiles, err = db.GetProfilesByUsername(username)
 				if err != nil {
 					return nil, fmt.Errorf("GetProfilesByUsername: could not get profiles from db: %w", err)

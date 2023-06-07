@@ -42,14 +42,14 @@ type PostGameCarnageReportBasicValue struct {
 	Value        float64 `json:"value"`
 }
 
-func GetPostGameCarnageReportsByInstanceId(db *database.DbPostGameCarnageReport, apiKey string, instanceId string) ([]*PostGameCarnageReport, error) {
+func GetPostGameCarnageReportsByInstanceId(db *database.DbPostGameCarnageReport, api *d2api.Api, instanceId string) ([]*PostGameCarnageReport, error) {
 	dbPostGameCarnageReports, err := db.GetPostGameCarnageReportsByInstanceId(instanceId)
 	if err != nil {
 		return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report from db: %w", err)
 	}
 
 	if len(dbPostGameCarnageReports) == 0 {
-		postGameCarnageReportResponse, err := d2api.GetPostGameCarnageReport(apiKey, instanceId)
+		postGameCarnageReportResponse, err := api.GetPostGameCarnageReport(instanceId)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report data from api: %w", err)
 		}

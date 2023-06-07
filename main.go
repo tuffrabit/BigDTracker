@@ -31,13 +31,16 @@ func main() {
 		log.SetOutput(os.Stdout)
 	}
 
+	api := &d2api.Api{}
+	api.Init(apiKey)
+
 	db := &database.Db{}
 	dbHandlers, err := db.GetDbHandlers()
 	if err != nil {
 		panic(err)
 	}
 
-	profiles, err := data.GetProfilesByUsername(dbHandlers.Profile, apiKey, mainArgs.Username)
+	profiles, err := data.GetProfilesByUsername(dbHandlers.Profile, api, mainArgs.Username)
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +51,7 @@ func main() {
 		for _, characterId := range profile.Profile.Data.CharacterIds {
 			activities, err := data.GetActivities(
 				dbHandlers,
-				apiKey,
+				api,
 				profile.DBProfile.MembershipId,
 				profile.DBProfile.MembershipType,
 				characterId,
@@ -60,7 +63,7 @@ func main() {
 			for _, activity := range activities {
 				log.Printf("Processing Activity #: %v\n", activity.InstanceId)
 
-				postGameCarnageReports, err := data.GetPostGameCarnageReportsByInstanceId(dbHandlers.PostGameCarnageReport, apiKey, activity.InstanceId)
+				postGameCarnageReports, err := data.GetPostGameCarnageReportsByInstanceId(dbHandlers.PostGameCarnageReport, api, activity.InstanceId)
 				if err != nil {
 					log.Println(fmt.Errorf("main: could not get post game carnage report for %v: %w", activity.InstanceId, err))
 					break
