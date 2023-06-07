@@ -1,10 +1,9 @@
-package data
+package d2data
 
 import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/tuffrabit/BigDTracker/d2api"
 	"github.com/tuffrabit/BigDTracker/database"
 )
 
@@ -42,29 +41,29 @@ type PostGameCarnageReportBasicValue struct {
 	Value        float64 `json:"value"`
 }
 
-func GetPostGameCarnageReportsByInstanceId(db *database.DbPostGameCarnageReport, api *d2api.Api, instanceId string) ([]*PostGameCarnageReport, error) {
-	dbPostGameCarnageReports, err := db.GetPostGameCarnageReportsByInstanceId(instanceId)
+func (data *Data) GetPostGameCarnageReportsByInstanceId(instanceId string) ([]*PostGameCarnageReport, error) {
+	dbPostGameCarnageReports, err := data.DbHandlers.PostGameCarnageReport.GetPostGameCarnageReportsByInstanceId(instanceId)
 	if err != nil {
 		return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report from db: %w", err)
 	}
 
 	if len(dbPostGameCarnageReports) == 0 {
-		postGameCarnageReportResponse, err := api.GetPostGameCarnageReport(instanceId)
+		postGameCarnageReportResponse, err := data.Api.GetPostGameCarnageReport(instanceId)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report data from api: %w", err)
 		}
 
-		postGameCarnageReportJson, err := stripApiRepsonseJson(postGameCarnageReportResponse.Json)
+		postGameCarnageReportJson, err := data.stripApiRepsonseJson(postGameCarnageReportResponse.Json)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not strip response json: %w", err)
 		}
 
-		err = db.CreatePostGameCarnageReport(instanceId, postGameCarnageReportJson)
+		err = data.DbHandlers.PostGameCarnageReport.CreatePostGameCarnageReport(instanceId, postGameCarnageReportJson)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not insert post game carnage report data into db: %w", err)
 		}
 
-		dbPostGameCarnageReports, err = db.GetPostGameCarnageReportsByInstanceId(instanceId)
+		dbPostGameCarnageReports, err = data.DbHandlers.PostGameCarnageReport.GetPostGameCarnageReportsByInstanceId(instanceId)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report from db: %w", err)
 		}
