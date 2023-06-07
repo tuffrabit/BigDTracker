@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/tuffrabit/BigDTracker/d2api"
-	"github.com/tuffrabit/BigDTracker/data"
+	"github.com/tuffrabit/BigDTracker/d2data"
 	"github.com/tuffrabit/BigDTracker/database"
 )
 
@@ -40,7 +40,10 @@ func main() {
 		panic(err)
 	}
 
-	profiles, err := data.GetProfilesByUsername(dbHandlers.Profile, api, mainArgs.Username)
+	data := &d2data.Data{}
+	data.Init(dbHandlers, api)
+
+	profiles, err := data.GetProfilesByUsername(mainArgs.Username)
 	if err != nil {
 		panic(err)
 	}
@@ -50,8 +53,6 @@ func main() {
 	for _, profile := range profiles {
 		for _, characterId := range profile.Profile.Data.CharacterIds {
 			activities, err := data.GetActivities(
-				dbHandlers,
-				api,
 				profile.DBProfile.MembershipId,
 				profile.DBProfile.MembershipType,
 				characterId,
@@ -63,7 +64,7 @@ func main() {
 			for _, activity := range activities {
 				log.Printf("Processing Activity #: %v\n", activity.InstanceId)
 
-				postGameCarnageReports, err := data.GetPostGameCarnageReportsByInstanceId(dbHandlers.PostGameCarnageReport, api, activity.InstanceId)
+				postGameCarnageReports, err := data.GetPostGameCarnageReportsByInstanceId(activity.InstanceId)
 				if err != nil {
 					log.Println(fmt.Errorf("main: could not get post game carnage report for %v: %w", activity.InstanceId, err))
 					break

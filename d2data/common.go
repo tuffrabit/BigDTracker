@@ -1,12 +1,25 @@
-package data
+package d2data
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/tuffrabit/BigDTracker/d2api"
+	"github.com/tuffrabit/BigDTracker/database"
 )
 
-func stripApiRepsonseJson(responseJson string) (string, error) {
+type Data struct {
+	DbHandlers *database.DbHandlers
+	Api        *d2api.Api
+}
+
+func (data *Data) Init(dbHandlers *database.DbHandlers, api *d2api.Api) {
+	data.DbHandlers = dbHandlers
+	data.Api = api
+}
+
+func (data *Data) stripApiRepsonseJson(responseJson string) (string, error) {
 	var dat map[string]interface{}
 
 	if err := json.Unmarshal([]byte(responseJson), &dat); err != nil {
