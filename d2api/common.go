@@ -21,14 +21,14 @@ func (api *Api) Init(apiKey string) {
 	api.ActivitiesPageSizeString = strconv.Itoa(ActivitiesPageSize)
 }
 
-func (api *Api) DoGetRequest(uri string) (*[]byte, error) {
+func (api *Api) DoGetRequest(uri string, entity Entity) error {
 	request, err := http.NewRequest(
 		"GET",
 		baseUrl+uri,
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Api.DoGetRequest: could not create bungie api request: %w", err)
+		return fmt.Errorf("Api.DoGetRequest: could not create bungie api request: %w", err)
 	}
 
 	request.Header.Add("X-API-KEY", api.ApiKey)
@@ -36,17 +36,22 @@ func (api *Api) DoGetRequest(uri string) (*[]byte, error) {
 	client := &http.Client{}
 	httpResponse, err := client.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("Api.DoGetRequest: request to bungie api failed: %w", err)
+		return fmt.Errorf("Api.DoGetRequest: request to bungie api failed: %w", err)
 	}
 
 	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Api.DoGetRequest: response from bungie api returned http %v", httpResponse.StatusCode)
+		return fmt.Errorf("Api.DoGetRequest: response from bungie api returned http %v", httpResponse.StatusCode)
 	}
 
 	body, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Api.DoGetRequest: could not read response body: %w", err)
+		return fmt.Errorf("Api.DoGetRequest: could not read response body: %w", err)
 	}
 
-	return &body, nil
+	err = entity.UnmarshalHttpResponseBody(body)
+	if err != nil {
+		return fmt.Errorf("Api.DoGetRequest: could not unmarshal response body: %w", err)
+	}
+
+	return nil
 }

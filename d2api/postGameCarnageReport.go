@@ -42,21 +42,28 @@ type PostGameCarnageReportRepsonseBasicValue struct {
 	Value float64 `json:"value"`
 }
 
+func (getPostGameCarnageReportRepsonse *PostGameCarnageReportRepsonse) UnmarshalHttpResponseBody(responseBody []byte) error {
+	err := json.Unmarshal(responseBody, getPostGameCarnageReportRepsonse)
+	if err != nil {
+		return fmt.Errorf("PostGameCarnageReportRepsonse.UnmarshalHttpResponseBody: could not json decode response: %w", err)
+	}
+
+	getPostGameCarnageReportRepsonse.Json = string(responseBody)
+
+	return nil
+}
+
 func (api *Api) GetPostGameCarnageReport(instanceId string) (*PostGameCarnageReportRepsonse, error) {
 	log.Printf("Getting PostGameCarnageReport data from Bungie for: %v\n", instanceId)
 
-	responseBody, err := api.DoGetRequest(fmt.Sprintf("Stats/PostGameCarnageReport/%v/", instanceId))
+	entity := &PostGameCarnageReportRepsonse{}
+	err := api.DoGetRequest(
+		fmt.Sprintf("Stats/PostGameCarnageReport/%v/", instanceId),
+		entity,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("Api.GetPostGameCarnageReport: could not create bungie api request: %w", err)
 	}
 
-	jsonResponse := &PostGameCarnageReportRepsonse{}
-	err = json.Unmarshal(*responseBody, jsonResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Api.GetPostGameCarnageReport: could not json decode response: %w", err)
-	}
-
-	jsonResponse.Json = string(*responseBody)
-
-	return jsonResponse, nil
+	return entity, nil
 }

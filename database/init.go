@@ -12,6 +12,10 @@ type Db struct {
 	Db *sql.DB
 }
 
+type DbHandler interface {
+	Init(db *sql.DB) error
+}
+
 type DbHandlers struct {
 	Profile               *DbProfile
 	Activity              *DbActivity
