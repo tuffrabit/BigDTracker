@@ -14,6 +14,13 @@ type Data struct {
 	Api        *d2api.Api
 }
 
+func NewData(dbHandlers *database.DbHandlers, api *d2api.Api) *Data {
+	return &Data{
+		DbHandlers: dbHandlers,
+		Api:        api,
+	}
+}
+
 func (data *Data) Init(dbHandlers *database.DbHandlers, api *d2api.Api) {
 	data.DbHandlers = dbHandlers
 	data.Api = api

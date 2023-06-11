@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/tuffrabit/BigDTracker/d2api"
+	"github.com/tuffrabit/BigDTracker/d2api/entity/activities"
 	"github.com/tuffrabit/BigDTracker/database"
 )
 
@@ -63,7 +64,7 @@ func (data *Data) populateActivities(membershipId string, membershipType int, ch
 	log.Printf("Activity start page #: %v for membership_id: %v, membership_type: %v, character_id: %v\n", startPage, membershipId, membershipType, characterId)
 
 	for {
-		activityResponse, err := data.Api.GetActivities(startPage, membershipId, membershipType, characterId)
+		activityResponse, err := data.Api.ActivitiesHandler.DoGet(startPage, membershipId, membershipType, characterId)
 		if err != nil {
 			return fmt.Errorf("Data.populateActivities: could not get activity history from db: %w", err)
 		}
@@ -103,9 +104,9 @@ func (data *Data) populateActivities(membershipId string, membershipType int, ch
 	return nil
 }
 
-func (data *Data) updateDbActivities(apiActivities []d2api.GetActivitiesRepsonseActivity, membershipId string, membershipType int, characterId string) error {
+func (data *Data) updateDbActivities(apiActivities []activities.RepsonseActivity, membershipId string, membershipType int, characterId string) error {
 	for _, activity := range apiActivities {
-		dbActivities, err := data.DbHandlers.Activity.GetActivitiesByInstanceId(activity.ActivityDetails.InstanceId)
+		dbActivities, err := data.DbHandlers.Activity.GetActivitiesByInstanceId(activity.Details.InstanceId)
 		if err != nil {
 			return fmt.Errorf("Data.updateDbActivities: could not get activities from db: %w", err)
 		}
@@ -146,7 +147,7 @@ func (data *Data) updateDbActivities(apiActivities []d2api.GetActivitiesRepsonse
 		}
 
 		if !dbActivityUpdated {
-			data.DbHandlers.Activity.CreateActivity(activity.ActivityDetails.InstanceId, membershipId, membershipType, characterId)
+			data.DbHandlers.Activity.CreateActivity(activity.Details.InstanceId, membershipId, membershipType, characterId)
 			if err != nil {
 				return fmt.Errorf("Data.updateDbActivities: could not create activity in db: %w", err)
 			}

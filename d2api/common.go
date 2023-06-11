@@ -1,10 +1,13 @@
 package d2api
 
 import (
-	"fmt"
-	"io"
-	"net/http"
 	"strconv"
+
+	"github.com/tuffrabit/BigDTracker/d2api/entity/activities"
+	"github.com/tuffrabit/BigDTracker/d2api/entity/player"
+	postgamecarnagereport "github.com/tuffrabit/BigDTracker/d2api/entity/postGameCarnageReport"
+	"github.com/tuffrabit/BigDTracker/d2api/entity/profile"
+	"github.com/tuffrabit/BigDTracker/d2api/meta"
 )
 
 const baseUrl string = "https://www.bungie.net/Platform/Destiny2/"
@@ -12,46 +15,51 @@ const ActivitiesPageSize int = 100
 const BigDApiHash int = 3824106094
 
 type Api struct {
-	ApiKey                   string
-	ActivitiesPageSizeString string
+	PlayerHandler                *player.Handler
+	ProfileHandler               *profile.Handler
+	ActivitiesHandler            *activities.Handler
+	PostGameCarnageReportHandler *postgamecarnagereport.Handler
 }
 
-func (api *Api) Init(apiKey string) {
-	api.ApiKey = apiKey
-	api.ActivitiesPageSizeString = strconv.Itoa(ActivitiesPageSize)
+func NewApi(apiKey string) *Api {
+	meta := NewMeta(apiKey)
+
+	return &Api{
+		PlayerHandler:                NewPlayerHandler(meta),
+		ProfileHandler:               NewProfileHandler(meta),
+		ActivitiesHandler:            NewActivitiesHandler(meta),
+		PostGameCarnageReportHandler: NewPostGameCarnageReportHandler(meta),
+	}
 }
 
-func (api *Api) DoGetRequest(uri string, entity Entity) error {
-	request, err := http.NewRequest(
-		"GET",
-		baseUrl+uri,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("Api.DoGetRequest: could not create bungie api request: %w", err)
+func NewMeta(apiKey string) *meta.Meta {
+	return &meta.Meta{
+		ApiKey:                   apiKey,
+		BaseUrl:                  baseUrl,
+		ActivitiesPageSizeString: strconv.Itoa(ActivitiesPageSize),
 	}
+}
 
-	request.Header.Add("X-API-KEY", api.ApiKey)
-
-	client := &http.Client{}
-	httpResponse, err := client.Do(request)
-	if err != nil {
-		return fmt.Errorf("Api.DoGetRequest: request to bungie api failed: %w", err)
+func NewPlayerHandler(meta *meta.Meta) *player.Handler {
+	return &player.Handler{
+		Meta: meta,
 	}
+}
 
-	if httpResponse.StatusCode != http.StatusOK {
-		return fmt.Errorf("Api.DoGetRequest: response from bungie api returned http %v", httpResponse.StatusCode)
+func NewProfileHandler(meta *meta.Meta) *profile.Handler {
+	return &profile.Handler{
+		Meta: meta,
 	}
+}
 
-	body, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return fmt.Errorf("Api.DoGetRequest: could not read response body: %w", err)
+func NewActivitiesHandler(meta *meta.Meta) *activities.Handler {
+	return &activities.Handler{
+		Meta: meta,
 	}
+}
 
-	err = entity.UnmarshalHttpResponseBody(body)
-	if err != nil {
-		return fmt.Errorf("Api.DoGetRequest: could not unmarshal response body: %w", err)
+func NewPostGameCarnageReportHandler(meta *meta.Meta) *postgamecarnagereport.Handler {
+	return &postgamecarnagereport.Handler{
+		Meta: meta,
 	}
-
-	return nil
 }

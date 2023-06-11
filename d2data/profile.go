@@ -31,15 +31,15 @@ func (data *Data) GetProfilesByUsername(username string) ([]*ProfileContainer, e
 	}
 
 	if len(dbProfiles) == 0 {
-		playerResponse, err := data.Api.GetPlayer(username)
+		playerResponse, err := data.Api.PlayerHandler.DoGet(username)
 		if err != nil {
 			return nil, fmt.Errorf("Data.GetProfilesByUsername: could not get player data from api: %w", err)
 		}
 
 		for _, player := range playerResponse.Response {
-			profileResponse, err := data.Api.GetProfile(player.MembershipId, player.MembershipType)
+			profileResponse, err := data.Api.ProfileHandler.DoGet(player.MembershipId, player.MembershipType)
 			if err == nil {
-				profileJson, err := data.stripApiRepsonseJson(profileResponse.Json)
+				profileJson, err := data.stripApiRepsonseJson(profileResponse.GetRawJson())
 				if err != nil {
 					return nil, fmt.Errorf("Data.GetProfilesByUsername: could not strip response json: %w", err)
 				}
