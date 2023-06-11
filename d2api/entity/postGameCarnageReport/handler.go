@@ -29,7 +29,7 @@ func (handler *Handler) DoGet(instanceId string) (*PostGameCarnageReport, error)
 		handler,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Api.GetPostGameCarnageReport: could not create bungie api request: %w", err)
+		return nil, fmt.Errorf("d2api/entity/postgamecarnagereport.DoGet: could not get postgamecarnagereport data from bungie api: %w", err)
 	}
 
 	return entity.(*PostGameCarnageReport), nil

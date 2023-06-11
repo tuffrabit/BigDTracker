@@ -16,7 +16,7 @@ func DoGet(uri string, handler entity.Handler) (entity.Entity, error) {
 		nil,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Api.DoGetRequest: could not create bungie api request: %w", err)
+		return nil, fmt.Errorf("d2api/http.DoGet: could not create bungie api request: %w", err)
 	}
 
 	request.Header.Add("X-API-KEY", handler.GetMeta().ApiKey)
@@ -24,22 +24,22 @@ func DoGet(uri string, handler entity.Handler) (entity.Entity, error) {
 	client := &http.Client{}
 	httpResponse, err := client.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("Api.DoGetRequest: request to bungie api failed: %w", err)
+		return nil, fmt.Errorf("d2api/http.DoGet: request to bungie api failed: %w", err)
 	}
 
 	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Api.DoGetRequest: response from bungie api returned http %v", httpResponse.StatusCode)
+		return nil, fmt.Errorf("d2api/http.DoGet: response from bungie api returned http %v", httpResponse.StatusCode)
 	}
 
 	body, err := io.ReadAll(httpResponse.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Api.DoGetRequest: could not read response body: %w", err)
+		return nil, fmt.Errorf("d2api/http.DoGet: could not read response body: %w", err)
 	}
 
 	entity := handler.NewEntity()
 	err = json.Unmarshal(body, entity)
 	if err != nil {
-		return nil, fmt.Errorf("d2api/entity/player.UnmarshalHttpResponseBody: could not json decode response: %w", err)
+		return nil, fmt.Errorf("d2api/http.DoGet: could not json decode response: %w", err)
 	}
 
 	entity.SetRawJson(string(body))

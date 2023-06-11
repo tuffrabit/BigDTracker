@@ -80,25 +80,25 @@ func (db *Db) GetDbHandlers() (*DbHandlers, error) {
 func (db *Db) initializeDb() error {
 	createStatements, err := db.getInitializeDbTableCreateStatements()
 	if err != nil {
-		return fmt.Errorf("Db.InitializeDb: could not get table create statements: %w", err)
+		return fmt.Errorf("Db.initializeDb: could not get table create statements: %w", err)
 	}
 
 	for _, statement := range createStatements {
 		_, err := statement.Exec()
 		if err != nil {
-			return fmt.Errorf("Db.InitializeDb: could not execute table create statement: %w", err)
+			return fmt.Errorf("Db.initializeDb: could not execute table create statement: %w", err)
 		}
 	}
 
 	createStatements, err = db.getInitializeDbIndexCreateStatements()
 	if err != nil {
-		return fmt.Errorf("Db.InitializeDb: could not get index create statements: %w", err)
+		return fmt.Errorf("Db.initializeDb: could not get index create statements: %w", err)
 	}
 
 	for _, statement := range createStatements {
 		_, err := statement.Exec()
 		if err != nil {
-			return fmt.Errorf("Db.InitializeDb: could not execute index create statement: %w", err)
+			return fmt.Errorf("Db.initializeDb: could not execute index create statement: %w", err)
 		}
 	}
 

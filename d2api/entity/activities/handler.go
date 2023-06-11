@@ -30,7 +30,7 @@ func (handler *Handler) DoGet(page int, membershipId string, membershipType int,
 		handler,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Api.GetActivities: could not create bungie api request: %w", err)
+		return nil, fmt.Errorf("d2api/entity/activities.DoGet: could not get activities data from bungie api: %w", err)
 	}
 
 	return entity.(*Activities), nil

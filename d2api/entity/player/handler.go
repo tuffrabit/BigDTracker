@@ -30,7 +30,7 @@ func (handler *Handler) DoGet(user string) (*Player, error) {
 		handler,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Api.GetPlayer: could not create bungie api request: %w", err)
+		return nil, fmt.Errorf("d2api/entity/player.DoGet: could not get player data from bungie api: %w", err)
 	}
 
 	return entity.(*Player), nil

@@ -30,7 +30,7 @@ func (handler *Handler) DoGet(membershipId string, membershipType int) (*Profile
 		handler,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("GetProfile: could not create bungie api request: %w", err)
+		return nil, fmt.Errorf("d2api/entity/profile.DoGet: could not get profile data from bungie api: %w", err)
 	}
 
 	return entity.(*Profile), nil
