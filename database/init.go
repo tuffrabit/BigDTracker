@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/glebarez/go-sqlite"
 )
 
 type Db struct {
@@ -31,7 +31,7 @@ func (db *Db) GetDbHandlers() (*DbHandlers, error) {
 	}
 
 	dsn := "./data.db"
-	sqlDb, err := sql.Open("sqlite3", dsn)
+	sqlDb, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("Db.GetDbHandlers: could not open data.db: %w", err)
 	}

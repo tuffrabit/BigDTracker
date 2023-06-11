@@ -48,12 +48,12 @@ func (data *Data) GetPostGameCarnageReportsByInstanceId(instanceId string) ([]*P
 	}
 
 	if len(dbPostGameCarnageReports) == 0 {
-		postGameCarnageReportResponse, err := data.Api.GetPostGameCarnageReport(instanceId)
+		postGameCarnageReportResponse, err := data.Api.PostGameCarnageReportHandler.DoGet(instanceId)
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not get post game carnage report data from api: %w", err)
 		}
 
-		postGameCarnageReportJson, err := data.stripApiRepsonseJson(postGameCarnageReportResponse.Json)
+		postGameCarnageReportJson, err := data.stripApiRepsonseJson(postGameCarnageReportResponse.GetRawJson())
 		if err != nil {
 			return nil, fmt.Errorf("GetPostGameCarnageReportByInstnaceId: could not strip response json: %w", err)
 		}

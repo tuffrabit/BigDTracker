@@ -31,8 +31,7 @@ func main() {
 		log.SetOutput(os.Stdout)
 	}
 
-	api := &d2api.Api{}
-	api.Init(apiKey)
+	api := d2api.NewApi(apiKey)
 
 	db := &database.Db{}
 	dbHandlers, err := db.GetDbHandlers()
@@ -40,8 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	data := &d2data.Data{}
-	data.Init(dbHandlers, api)
+	data := d2data.NewData(dbHandlers, api)
 
 	profiles, err := data.GetProfilesByUsername(mainArgs.Username)
 	if err != nil {
