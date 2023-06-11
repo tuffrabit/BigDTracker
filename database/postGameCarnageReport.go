@@ -58,7 +58,7 @@ func (dbPostGameCarnageReport *DbPostGameCarnageReport) GetPostGameCarnageReport
 
 	rows, err := dbPostGameCarnageReport.PreparedStatements.GetByInstanceId.Query(instanceId)
 	if err != nil {
-		return nil, fmt.Errorf("GetPostGameCarnageReportByInstanceId: could not create post_game_carnage_report query: %w", err)
+		return nil, fmt.Errorf("DbPostGameCarnageReport.GetPostGameCarnageReportByInstanceId: could not create post_game_carnage_report query: %w", err)
 	}
 
 	defer rows.Close()
